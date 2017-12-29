@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace PlayCZ2TvHeadend
 {
@@ -11,6 +9,5 @@ namespace PlayCZ2TvHeadend
         public string Shortcut { get; set; }
         public string LogoUrl { get; set; }
         public List<string> StreamList { get; set; }
-
     }
 }

@@ -45,6 +45,7 @@ namespace PlayCZ2TvHeadend
                 radio.LogoUrl = $"http://api.play.cz/static/radio_logo/t200/{match.Groups["3"].Value}.png";
                 _radios.Add(radio);
             }
+
             Parallel.ForEach(_radios, radio =>
                 {
                     radio.StreamList = GetStreams(radio.Shortcut).Distinct()
@@ -104,10 +105,12 @@ namespace PlayCZ2TvHeadend
                             foreach (Match match4 in reg4.Matches(httpdata2))
                                 res += match4.Groups["1"].Value;
                         }
+
                         result.AddRange(res.Split('\n'));
                     }
                 }
             }
+
             return result;
         }
 
@@ -135,6 +138,7 @@ namespace PlayCZ2TvHeadend
                         result += radio.StreamList[0] + "\n";
                     }
                 }
+
             var currentDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\";
             if (tvHeadend)
             {

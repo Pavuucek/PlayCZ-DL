@@ -2,7 +2,22 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Michal Kuncl</Authors>
+    <Company />
+    <Product />
+    <PackageLicenseUrl>https://github.com/Pavuucek/PlayCZ2TvHeadend/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Pavuucek/PlayCZ2TvHeadend</PackageProjectUrl>
+    <SignAssembly>false</SignAssembly>
+    <DelaySign>false</DelaySign>
+    <Description>Generates a list of radios from Play.cz site in form of a M3U playlist for importing into TvHeadend</Description>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GitVersioner" Version="17.12.27" />
+  </ItemGroup>
 
 </Project>
