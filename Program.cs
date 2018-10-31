@@ -122,11 +122,13 @@ namespace PlayCZ2TvHeadend
             Console.WriteLine("PlayList...");
             var result = new StringBuilder();
             result.AppendLine("#EXTM3U");
+            var radiocount = 0;
             foreach (var radio in _radios)
                 if (radio.StreamList.Count > 0)
                 {
+                    radiocount++;
                     result.AppendLine(
-                        $"#EXTINF:-1 group-title=\"Play.cz\" radio=true tvg-logo={radio.LogoUrl},{radio.Title}");
+                        $"#EXTINF:-1 group-title=\"Play.cz\" radio=\"true\" tvg-logo=\"{radio.LogoUrl}\" tvg-chno=\"{radiocount}\",{radio.Title}");
                     var stream = radio.StreamList[0];
                     if (tvHeadend)
                     {
@@ -142,16 +144,16 @@ namespace PlayCZ2TvHeadend
                     }
                 }
 
-            var currentDir = Directory.GetCurrentDirectory() + "\\";
+            var currentDir = Directory.GetCurrentDirectory();
             if (tvHeadend)
             {
-                Console.WriteLine(currentDir + "tvheadend.m3u");
-                File.WriteAllText(currentDir + "tvheadend.m3u", result.ToString());
+                Console.WriteLine(Path.Combine(currentDir, "play.cz.t.m3u8"));
+                File.WriteAllText(Path.Combine(currentDir, "play.cz.t.m3u8"), result.ToString());
             }
             else
             {
-                Console.WriteLine(currentDir + "playlist.m3u");
-                File.WriteAllText(currentDir + "playlist.m3u", result.ToString());
+                Console.WriteLine(Path.Combine(currentDir, "play.cz.m3u8"));
+                File.WriteAllText(Path.Combine(currentDir, "play.cz.m3u8"), result.ToString());
             }
         }
 
