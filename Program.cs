@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -19,8 +20,9 @@ namespace PlayCZ2TvHeadend
             Console.WriteLine("PlayCZ2TvHeadend Starting...");
             Console.WriteLine();
             GetRadios();
-            GenM3U(false);
-            GenM3U(true);
+            GeneratePlaylist(0);
+            GeneratePlaylist(1);
+            GeneratePlaylist(2);
             Console.WriteLine();
             Console.WriteLine("Finished!");
         }
@@ -65,7 +67,7 @@ namespace PlayCZ2TvHeadend
             _radios = _radios.OrderBy(ra => ra.Title).ToList();
         }
 
-        public static List<string> GetStreams(string shortcut)
+        private static List<string> GetStreams(string shortcut)
         {
             Console.WriteLine("Thread: " + Thread.CurrentThread.ManagedThreadId + " Getting streams of " + shortcut);
             var result = new List<string>();
@@ -101,13 +103,14 @@ namespace PlayCZ2TvHeadend
                             httpdata2 = httpdata2.Replace("\r", string.Empty);
                             httpdata2 = httpdata2.Replace("\n", string.Empty);
                             httpdata2 = httpdata2.Replace("\t", string.Empty);
-                            var reg4 = new Regex(@"<pubpoint>.+?CDATA\[(.+?)\]\]></pubpoint>");
+                            //var reg4 = new Regex(@"<pubpoint>.+?CDATA\[(.+?)\]\]></pubpoint>");
+                            var reg4 = new Regex("<ref href=\"(.+?)\">"); //(.+?)</ref>");
                             var sb = new StringBuilder();
-                            foreach (Match match4 in reg4.Matches(httpdata2)) sb.Append(match4.Groups["1"].Value);
+                            foreach (Match match4 in reg4.Matches(httpdata2)) sb.AppendLine(match4.Groups["1"].Value);
                             res = sb.ToString();
                         }
 
-                        result.AddRange(res.Split('\n'));
+                        result.AddRange(res.Split(Environment.NewLine.ToCharArray()));
                     }
                 }
             }
@@ -115,59 +118,74 @@ namespace PlayCZ2TvHeadend
             return result;
         }
 
-        private static void GenM3U(bool tvHeadend)
+        private static void GeneratePlaylist(int playlistType)
         {
-            Console.Write("Generating ");
-            if (tvHeadend) Console.Write("TvHeadend ");
-            Console.WriteLine("PlayList...");
+            Console.WriteLine($"Generating PlayList type {playlistType}...");
             var result = new StringBuilder();
             result.AppendLine("#EXTM3U");
             var radiocount = 0;
+            string playlistFile;
+            var currentDir = Directory.GetCurrentDirectory();
             foreach (var radio in _radios)
-                if (radio.StreamList.Count > 0)
+            {
+                if (radio.StreamList.Count <= 0) continue;
+                radiocount++;
+                result.AppendLine(
+                    $"#EXTINF:-1 group-title=\"Play.cz\" radio=\"true\" tvg-logo=\"{radio.LogoUrl}\" tvg-chno=\"{radiocount}\",{radio.Title}");
+                var stream = radio.StreamList[0];
+                switch (playlistType)
                 {
-                    radiocount++;
-                    result.AppendLine(
-                        $"#EXTINF:-1 group-title=\"Play.cz\" radio=\"true\" tvg-logo=\"{radio.LogoUrl}\" tvg-chno=\"{radiocount}\",{radio.Title}");
-                    var stream = radio.StreamList[0];
-                    if (tvHeadend)
+                    case 1:
                     {
+                        // tvheadend
                         var r =
                             $"pipe://ffmpeg -loglevel fatal -i {radio.StreamList[0]} -vn -acodec copy -flags +global_header -strict -2 -metadata service_provider={radio.StreamList[0]} -metadata service_name={radio.Shortcut} -f mpegts -mpegts_service_type digital_radio pipe:1";
                         if (stream.ToLowerInvariant().Contains("mms:"))
                             r = r.Replace("-acodec copy", "-acodec aac"); // prekodovat wma stream
                         result.AppendLine(r);
+                        break;
                     }
-                    else
-                    {
+                    case 2:
+                        // hub
+                        playlistFile = Path.Combine(currentDir, radio.Shortcut + ".m3u8");
+                        File.WriteAllText(playlistFile, string.Join(Environment.NewLine, radio.StreamList.ToArray()));
+                        result.AppendLine(playlistFile);
+                        break;
+                    default:
+                        // typ 0
                         result.AppendLine(radio.StreamList[0]);
-                    }
+                        break;
                 }
+            }
 
-            var currentDir = Directory.GetCurrentDirectory();
-            if (tvHeadend)
+            switch (playlistType)
             {
-                Console.WriteLine(Path.Combine(currentDir, "play.cz.t.m3u8"));
-                File.WriteAllText(Path.Combine(currentDir, "play.cz.t.m3u8"), result.ToString());
+                case 1:
+                    playlistFile = "play.cz.tvheadend.m3u8";
+                    break;
+                case 2:
+                    playlistFile = "play.cz.hub.m3u8";
+                    break;
+                default:
+                    playlistFile = "play.cz.generic.m3u8";
+                    break;
             }
-            else
-            {
-                Console.WriteLine(Path.Combine(currentDir, "play.cz.m3u8"));
-                File.WriteAllText(Path.Combine(currentDir, "play.cz.m3u8"), result.ToString());
-            }
+
+            Console.WriteLine(Path.Combine(currentDir, playlistFile));
+            File.WriteAllText(Path.Combine(currentDir, playlistFile), result.ToString());
         }
 
-        public static string DownloadToString(string url)
+        private static string DownloadToString(string url)
         {
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent",
-                " Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3");
+                "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3");
             var xr = httpClient.GetStringAsync(url);
             var httpdata = xr.Result;
             httpClient.Dispose();
             return httpdata;
         }
-
+        
         public static string ToWindows1250(this string source)
         {
             var windows1250 = Encoding.ASCII;
