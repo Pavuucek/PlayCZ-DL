@@ -4,17 +4,17 @@
     <TargetFramework>net45</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Michal Kuncl</Authors>
-    <Company />
+    <Company>Pavuucina Industries</Company>
     <Product />
-    <PackageLicenseUrl>https://github.com/Pavuucek/PlayCZ2TvHeadend/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/Pavuucek/PlayCZ2TvHeadend</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Pavuucek/PlayCZ-DL/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Pavuucek/PlayCZ-DL</PackageProjectUrl>
     <SignAssembly>false</SignAssembly>
     <DelaySign>false</DelaySign>
     <Description>Generates a list of radios from Play.cz site in form of a M3U playlist for importing into TvHeadend</Description>
     <AssemblyVersion>0.0.0.9</AssemblyVersion>
     <FileVersion>0.0.0.9</FileVersion>
     <Version>0.0.0.9</Version>
-    <StartupObject>PlayCZ2TvHeadend.Program</StartupObject>
+    <StartupObject>PlayCZ-DL.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Net.Http" />
